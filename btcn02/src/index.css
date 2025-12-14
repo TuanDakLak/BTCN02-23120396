@@ -46,6 +46,7 @@
   --color-headerbg: var(--headerbg);
   --color-borderHeader: var(--borderHeader);
   --color-textHeader: var(--textHeader);
+  --color-navbg: var(--navbg);
 }
 
 :root {
@@ -85,6 +86,7 @@
   --headerbg: oklch(94.8% 0.028 342.258);
   --borderHeader: oklch(95.4% 0.038 75.164);
   --textHeader: oklch(40.8% 0.123 38.172);
+  --navbg: oklch(81.744% 0.08845 250.481);
 }
 
 .dark {
@@ -122,6 +124,7 @@
 
   --headerbg: oklch(27.8% 0.033 256.848);
   --textHeader: white;
+  --navbg: oklch(21% 0.034 264.665);
 }
 
 
