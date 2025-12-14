@@ -1,12 +1,14 @@
-import Header from './components/webComponents/Header'
-import './App.css'
+import Header from "./components/webComponents/Header";
+import Nav from "./components/webComponents/Nav";
+import "./App.css";
 
 function App() {
-
-
   return (
-    <Header />
-  )
+    <>
+      <Header />
+      <Nav />
+    </>
+  );
 }
 
-export default App
+export default App;

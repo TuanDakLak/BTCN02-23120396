@@ -15,7 +15,7 @@ export default function Header() {
   }, [darkMode]);
 
   return (
-    <header className="bg-headerbg border-2 border-borderHeader rounded-sm p-4">
+    <header className="bg-headerbg border-2 border-borderHeader rounded-sm p-4 my-1.5">
       <div className="mx-auto flex items-center justify-between text-textHeader">
         <p>23120396</p>
 
