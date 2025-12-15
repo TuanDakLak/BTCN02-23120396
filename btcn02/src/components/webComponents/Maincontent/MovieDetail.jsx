@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "../../ui/card";
 import { apiGet } from "../../../api/movieAPI";
 
-export default function MovieDetail({ id, onBack, onSelectPerson }) {
+export default function MovieDetail({ id, onSelectPerson }) {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +29,7 @@ export default function MovieDetail({ id, onBack, onSelectPerson }) {
 
   if (loading) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-4">
+      <div className="w-full max-w-6xl mx-auto p-4">
         <Card className="bg-white dark:bg-gray-800 shadow-lg rounded-xl">
           <CardContent className="flex items-center justify-center p-12">
             <div className="text-center space-y-4">
@@ -44,19 +44,13 @@ export default function MovieDetail({ id, onBack, onSelectPerson }) {
 
   if (error) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-4">
+      <div className="w-full max-w-6xl mx-auto p-4">
         <Card className="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 shadow-lg rounded-xl">
           <CardContent className="p-8">
             <div className="text-center space-y-4">
               <div className="text-red-500 text-3xl mb-2">!</div>
               <p className="text-red-600 dark:text-red-400 font-semibold text-lg">Có lỗi xảy ra</p>
               <p className="text-gray-600 dark:text-gray-300">{error}</p>
-              <button
-                className="mt-4 px-5 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors"
-                onClick={onBack}
-              >
-                Quay lại
-              </button>
             </div>
           </CardContent>
         </Card>
@@ -78,13 +72,6 @@ export default function MovieDetail({ id, onBack, onSelectPerson }) {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <button
-        onClick={onBack}
-        className="mb-6 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1"
-      >
-        ← <span>Quay lại</span>
-      </button>
-
       <Card className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden">
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
