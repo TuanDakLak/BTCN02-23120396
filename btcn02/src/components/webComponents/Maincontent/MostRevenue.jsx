@@ -87,11 +87,11 @@ export default function MostRevenue() {
               key={movie.id}
               className="basis-full "
             >
-              <div className="relative w-full">
+              <div className="relative w-full group">
                 <img
                   src={movie.image}
                   alt={movie.title}
-                  className="w-full h-full object-cover rounded-sm"
+                  className="w-full cursor-pointer h-full object-cover rounded-sm transition-transform duration-500 group-hover:scale-105"
                 />
 
                 <div className="absolute bottom-16 left-0 w-full text-center px-2">
