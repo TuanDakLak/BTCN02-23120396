@@ -11,6 +11,7 @@ import { Star, TrendingUp } from "lucide-react";
 import { apiGet } from "@/api/movieAPI";
 
 export default function MostRevenue() {
+  const [current, setCurrent] = useState(0);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,7 +69,18 @@ export default function MostRevenue() {
 
   return (
     <div className="w-80 mx-auto mt-1  ">
-      <Carousel className="relative w-full">
+      <Carousel
+        className="relative w-full"
+        setApi={(api) => {
+          if (!api) return;
+
+          setCurrent(api.selectedScrollSnap());
+
+          api.on("select", () => {
+            setCurrent(api.selectedScrollSnap());
+          });
+        }}
+      >
         <CarouselContent>
           {movies.map((movie, index) => (
             <CarouselItem key={movie.id} className="basis-full overflow-hidden">
@@ -92,8 +104,17 @@ export default function MostRevenue() {
                     </span>
                   </div>
                 )}
-
-
+                <div className="absolute bottom-2 left-10 w-60 flex gap-1">
+                  {movies.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`
+                      h-[3px] flex-1 rounded-full transition-all 
+                      ${i === current ? "bg-white" : "bg-white/30"}
+                      `}
+                    />
+                  ))}
+                </div>
               </div>
             </CarouselItem>
           ))}
