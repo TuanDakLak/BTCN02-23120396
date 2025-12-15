@@ -12,6 +12,8 @@ import Signup from "./components/webComponents/Logging/Signup";
 import Login from "./components/webComponents/Logging/Login";
 import { AuthProvider } from "./components/webComponents/Logging/AuthContext";
 import ProtectedRoute from "./components/webComponents/Logging/ProtectedRoute";
+import Profile from "./components/webComponents/Profile";
+import Favorites from "./components/webComponents/Favourite";
 
 import "./App.css";
 
