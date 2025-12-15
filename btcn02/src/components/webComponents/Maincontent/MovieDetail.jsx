@@ -6,8 +6,15 @@ export default function MovieDetail({ id, onSelectPerson }) {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const reviewsPerPage = 5;
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState(null);
+  const [reviewsPagination, setReviewsPagination] = useState({
+    current_page: 1,
+    total_pages: 1,
+    total_items: 0,
+    page_size: 5,
+  });
 
   useEffect(() => {
     if (!id) return;
@@ -28,6 +35,121 @@ export default function MovieDetail({ id, onSelectPerson }) {
       mounted = false;
     };
   }, [id]);
+
+  const fetchReviews = async (page = 1) => {
+    if (!id) return;
+    try {
+      setReviewsLoading(true);
+      setReviewsError(null);
+      const data = await apiGet(`/api/movies/${id}/reviews?page=${page}&limit=5&sort=newest`);
+      
+      setReviews(data.data || []);
+      setReviewsPagination(data.pagination || {
+        current_page: page,
+        total_pages: 1,
+        total_items: 0,
+        page_size: 5
+      });
+      
+    } catch (err) {
+      console.error("Lỗi khi tải reviews:", err);
+      setReviewsError(err.message || "Lỗi khi tải đánh giá");
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (movie && id) {
+      fetchReviews(1);
+    }
+  }, [movie, id]);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= reviewsPagination.total_pages) {
+      fetchReviews(page);
+      // Scroll to reviews section
+      setTimeout(() => {
+        const reviewsSection = document.getElementById('reviews-section');
+        if (reviewsSection) {
+          reviewsSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 50);
+    }
+  };
+
+  const renderPagination = () => {
+    const { current_page, total_pages } = reviewsPagination;
+    if (total_pages <= 1) return null;
+    
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, current_page - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(total_pages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className="px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        pages.push(
+          <span key="dots-start" className="px-2 text-gray-400">
+            ...
+          </span>
+        );
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 rounded-lg transition-colors ${
+            i === current_page
+              ? "bg-blue-500 text-white font-medium"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700"
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (endPage < total_pages) {
+      if (endPage < total_pages - 1) {
+        pages.push(
+          <span key="dots-end" className="px-2 text-gray-400">
+            ...
+          </span>
+        );
+      }
+      pages.push(
+        <button
+          key={total_pages}
+          onClick={() => handlePageChange(total_pages)}
+          className="px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        >
+          {total_pages}
+        </button>
+      );
+    }
+
+    return pages;
+  };
 
   if (loading) {
     return (
@@ -66,113 +188,6 @@ export default function MovieDetail({ id, onSelectPerson }) {
 
   if (!movie) return null;
 
-  const renderPersonButton = (p) => (
-    <button
-      key={p.id}
-      onClick={() => onSelectPerson?.(p.id)}
-      className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors mr-2 mb-2 text-sm"
-    >
-      {p.name}
-    </button>
-  );
-
-  const formatReviewDate = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("vi-VN", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  const totalReviews = movie.reviews?.length || 0;
-  const totalPages = Math.ceil(totalReviews / reviewsPerPage);
-  const startIndex = (currentPage - 1) * reviewsPerPage;
-  const endIndex = startIndex + reviewsPerPage;
-  const currentReviews = movie.reviews?.slice(startIndex, endIndex) || [];
-
-  const goToPage = (page) => {
-    setCurrentPage(page);
-    document
-      .getElementById("reviews-section")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const renderPaginationButtons = () => {
-    const buttons = [];
-    const maxVisibleButtons = 5;
-
-    let startPage = Math.max(
-      1,
-      currentPage - Math.floor(maxVisibleButtons / 2)
-    );
-    let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
-
-    if (endPage - startPage + 1 < maxVisibleButtons) {
-      startPage = Math.max(1, endPage - maxVisibleButtons + 1);
-    }
-
-    if (startPage > 1) {
-      buttons.push(
-        <Button
-          key="first"
-          variant="outline"
-          size="sm"
-          onClick={() => goToPage(1)}
-          className="w-10 h-10"
-        >
-          1
-        </Button>
-      );
-      if (startPage > 2) {
-        buttons.push(
-          <span key="dots-start" className="px-2 text-gray-500">
-            ...
-          </span>
-        );
-      }
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <Button
-          key={i}
-          variant={currentPage === i ? "default" : "outline"}
-          size="sm"
-          onClick={() => goToPage(i)}
-          className={`w-10 h-10 ${
-            currentPage === i ? "bg-blue-600 text-white hover:bg-blue-700" : ""
-          }`}
-        >
-          {i}
-        </Button>
-      );
-    }
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        buttons.push(
-          <span key="dots-end" className="px-2 text-gray-500">
-            ...
-          </span>
-        );
-      }
-      buttons.push(
-        <Button
-          key="last"
-          variant="outline"
-          size="sm"
-          onClick={() => goToPage(totalPages)}
-          className="w-10 h-10"
-        >
-          {totalPages}
-        </Button>
-      );
-    }
-    return buttons;
-  };
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -284,7 +299,7 @@ export default function MovieDetail({ id, onSelectPerson }) {
       {movie.reviews && movie.reviews.length > 0 && (
         <Card
           id="reviews-section"
-          className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden"
+          className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden mt-8"
         >
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
@@ -293,7 +308,8 @@ export default function MovieDetail({ id, onSelectPerson }) {
                   Đánh giá từ khán giả
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {totalReviews} đánh giá • Trang {currentPage} / {totalPages}
+                  {totalReviews} đánh giá
+                  {totalPages > 1 && ` • Trang ${currentPage}/${totalPages}`}
                 </p>
               </div>
             </div>
@@ -339,7 +355,7 @@ export default function MovieDetail({ id, onSelectPerson }) {
                     </p>
                     {review.warning_spoilers && (
                       <span className="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-xs text-red-600 dark:text-red-400 rounded">
-                         Cảnh báo spoiler
+                        ⚠️ Cảnh báo spoiler
                       </span>
                     )}
                   </div>
@@ -347,33 +363,34 @@ export default function MovieDetail({ id, onSelectPerson }) {
               ))}
             </div>
 
+            {/* FIXED: Phân trang luôn hiển thị khi có nhiều hơn 1 trang */}
             {totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(currentPage - 1)}
+              <div className="flex items-center justify-center space-x-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="flex items-center gap-2"
+                  className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                    currentPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                  Trước
-                </Button>
+                  ← Trước
+                </button>
 
-                <div className="flex items-center gap-2">
-                  {renderPaginationButtons()}
-                </div>
+                {renderPagination()}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(currentPage + 1)}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="flex items-center gap-2"
+                  className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                    currentPage === totalPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
                 >
-                  Sau
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                  Sau →
+                </button>
               </div>
             )}
           </CardContent>
@@ -382,7 +399,7 @@ export default function MovieDetail({ id, onSelectPerson }) {
 
       {/* Similar Movies */}
       {movie.similar_movies && movie.similar_movies.length > 0 && (
-        <Card className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden">
+        <Card className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden mt-8">
           <CardContent className="p-6 md:p-8">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Phim tương tự
@@ -403,7 +420,7 @@ export default function MovieDetail({ id, onSelectPerson }) {
                       className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                      ⭐ {similarMovie.rate?.toFixed(1)}
+                      ⭐ {similarMovie.rate?.toFixed(1) || "0.0"}
                     </div>
                   </div>
                   <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
