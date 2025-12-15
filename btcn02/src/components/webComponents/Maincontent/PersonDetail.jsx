@@ -9,14 +9,11 @@ export default function PersonDetail({ id, onBack, onSelectMovie }) {
 
   useEffect(() => {
     if (!id) return;
-
     let mounted = true;
-
     const fetchPerson = async () => {
       try {
         setLoading(true);
         setError(null);
-
         const data = await apiGet(`/api/persons/${id}`);
         if (mounted) {
           setPerson(data);
@@ -31,9 +28,7 @@ export default function PersonDetail({ id, onBack, onSelectMovie }) {
         }
       }
     };
-
     fetchPerson();
-
     return () => {
       mounted = false;
     };
