@@ -1,17 +1,17 @@
+import React, { useState } from "react";
 import { House } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useState, useContext } from "react";
-import { SearchContext } from "./SearchContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Nav() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { performSearch, clearSearch } = useContext(SearchContext);
+  const navigate = useNavigate();
 
   const handleSearch = () => {
     const q = searchQuery.trim();
     if (!q) return;
-    performSearch(q);
+    navigate(`/search?q=${encodeURIComponent(q)}`);
   };
 
   const handleKeyPress = (e) => {
@@ -28,7 +28,7 @@ export default function Nav() {
           size="sm"
           onClick={() => {
             setSearchQuery("");
-            clearSearch();
+            navigate("/");
           }}
           className="bg-navbg border-none hover:bg-transparent"
         >
