@@ -82,7 +82,7 @@ export default function MostRevenue() {
         }}
       >
         <CarouselContent>
-          {movies.map((movie, index) => (
+          {movies.map((movie) => (
             <CarouselItem key={movie.id} className="basis-full overflow-hidden">
               <div className="relative w-full">
                 <img
