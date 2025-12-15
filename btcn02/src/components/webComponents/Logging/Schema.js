@@ -11,8 +11,8 @@ export const registerSchema = z
       .nonempty("Email là bắt buộc"),
     phone: z.string()
       .optional()
-      .refine(val => !val || /^[0-9+\-\s]+$/.test(val), {
-        message: "Số điện thoại không hợp lệ"
+      .refine(val => !val || /^[0-9+\-\s()]{10,15}$/.test(val), {
+        message: "Số điện thoại không hợp lệ (10-15 số)"
       }),
     dob: z.string()
       .optional()

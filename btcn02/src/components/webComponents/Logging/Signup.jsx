@@ -14,6 +14,7 @@ import { Label } from "../../ui/label";
 import { Button } from "../../ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "./AuthContext";
 
 export default function Signup() {
   const {
@@ -25,53 +26,46 @@ export default function Signup() {
 
   const navigate = useNavigate();
   const [signupError, setSignupError] = useState("");
+  const { signup } = useAuth();
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const onSubmit = async (data) => {
     try {
       setSignupError("");
       
-      const newUser = {
+      const userData = {
         username: data.username,
         email: data.email,
         password: data.password,
         phone: data.phone || "",
-        dob: data.dob || "",
+        dob: data.dob || ""
       };
 
-      const res = await fetch("https://34.124.214.214:2423/api/users/register", {
-        method: "POST",
-        headers: {
-          "accept": "*/*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newUser),
-      });
+      const result = await signup(userData);
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Đăng ký thất bại!");
+      if (result.success) {
+        setSuccessMessage(result.message || "Đăng ký thành công!");
+        setSignupSuccess(true);
+        reset();
+        
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        setSignupError(result.error || "Đã xảy ra lỗi khi đăng ký");
       }
-
-      setSignupSuccess(true);
-      reset();
-      
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-
     } catch (error) {
-      setSignupError(error.message || "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại!");
+      console.error('Signup error:', error);
+      setSignupError(error.message || "Đã xảy ra lỗi khi đăng ký");
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md shadow-xl rounded-2xl overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
+        <CardHeader >
           <CardTitle className="text-2xl text-center">Đăng ký tài khoản</CardTitle>
-          <CardDescription className="text-center text-green-100">
+          <CardDescription className="text-center">
             Tạo tài khoản mới để bắt đầu
           </CardDescription>
         </CardHeader>
@@ -80,7 +74,7 @@ export default function Signup() {
           {signupSuccess && (
             <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-green-600 dark:text-green-400 text-center">
-                ✅ Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...
+                 {successMessage} ! Đang chuyển hướng đến trang đăng nhập...
               </p>
             </div>
           )}
@@ -104,7 +98,7 @@ export default function Signup() {
                   placeholder="Nhập tên đăng nhập"
                   {...register("username")}
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || signupSuccess}
                 />
                 {errors.username && (
                   <p className="text-red-500 text-sm mt-1">

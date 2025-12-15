@@ -20,45 +20,34 @@ export default function App() {
     <AuthProvider>
       <SearchProvider>
         <Router>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
             <Header />
             <Nav />
-            <main className="flex-1">
+            <main className="flex-1 container mx-auto px-4 py-6">
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Main />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/movie/:id"
-                  element={
-                    <ProtectedRoute>
-                      <MovieRoute />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/person/:id"
-                  element={
-                    <ProtectedRoute>
-                      <PersonRoute />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/search"
-                  element={
-                    <ProtectedRoute>
-                      <SearchPage />
-                    </ProtectedRoute>
-                  }
-                />
+                
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Main />
+                  </ProtectedRoute>
+                } />
+                <Route path="/movie/:id" element={
+                  <ProtectedRoute>
+                    <MovieRoute />
+                  </ProtectedRoute>
+                } />
+                <Route path="/person/:id" element={
+                  <ProtectedRoute>
+                    <PersonRoute />
+                  </ProtectedRoute>
+                } />
+                <Route path="/search" element={
+                  <ProtectedRoute>
+                    <SearchPage />
+                  </ProtectedRoute>
+                } />
               </Routes>
             </main>
             <Footer />
