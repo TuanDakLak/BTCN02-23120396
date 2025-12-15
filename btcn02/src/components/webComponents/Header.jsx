@@ -1,12 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Moon, Sun, User, LogOut } from "lucide-react";
 import { Switch } from "../ui/switch";
 import { useAuth } from "./Logging/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const [darkMode, setDarkMode] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  
   useEffect(() => {
     const root = document.documentElement;
     if (darkMode) {
