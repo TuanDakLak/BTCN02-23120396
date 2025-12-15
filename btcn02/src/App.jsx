@@ -15,6 +15,7 @@ export default function App() {
     <SearchProvider>
       <Router>
         <div className="min-h-screen flex flex-col">
+          <Header />
           <Nav />
           <main className="flex-1">
             <Routes>
