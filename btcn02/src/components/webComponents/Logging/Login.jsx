@@ -20,7 +20,12 @@ export default function Login() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({ resolver: zodResolver(loginSchema) });
+    trigger,
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+    reValidateMode: "onBlur",
+  });
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -40,6 +45,7 @@ export default function Login() {
       setLoginError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!");
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
@@ -97,7 +103,7 @@ export default function Login() {
                   disabled={isSubmitting}
                 />
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-sm mt-1 animate-fadeIn">
                     {errors.password.message}
                   </p>
                 )}

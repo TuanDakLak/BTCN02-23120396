@@ -22,7 +22,8 @@ export default function Signup() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm({ resolver: zodResolver(registerSchema) });
+  } = useForm({ resolver: zodResolver(registerSchema), mode: "onBlur", reValidateMode: "onBlur",
+   });
 
   const navigate = useNavigate();
   const [signupError, setSignupError] = useState("");
@@ -33,13 +34,13 @@ export default function Signup() {
   const onSubmit = async (data) => {
     try {
       setSignupError("");
-      
+
       const userData = {
         username: data.username,
         email: data.email,
         password: data.password,
         phone: data.phone || "",
-        dob: data.dob || ""
+        dob: data.dob || "",
       };
 
       const result = await signup(userData);
@@ -48,7 +49,7 @@ export default function Signup() {
         setSuccessMessage(result.message || "Đăng ký thành công!");
         setSignupSuccess(true);
         reset();
-        
+
         setTimeout(() => {
           navigate("/login");
         }, 2000);
@@ -56,15 +57,17 @@ export default function Signup() {
         setSignupError(result.error || "Đã xảy ra lỗi khi đăng ký");
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error("Signup error:", error);
       setSignupError(error.message || "Đã xảy ra lỗi khi đăng ký");
     }
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md shadow-xl rounded-2xl overflow-hidden">
-        <CardHeader >
-          <CardTitle className="text-2xl text-center">Đăng ký tài khoản</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            Đăng ký tài khoản
+          </CardTitle>
           <CardDescription className="text-center">
             Tạo tài khoản mới để bắt đầu
           </CardDescription>
@@ -74,7 +77,7 @@ export default function Signup() {
           {signupSuccess && (
             <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-green-600 dark:text-green-400 text-center">
-                 {successMessage} ! Đang chuyển hướng đến trang đăng nhập...
+                {successMessage} ! Đang chuyển hướng đến trang đăng nhập...
               </p>
             </div>
           )}
@@ -90,7 +93,10 @@ export default function Signup() {
           <form id="signupForm" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="username"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Tên đăng nhập *
                 </Label>
                 <Input
@@ -108,7 +114,10 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="email"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Email *
                 </Label>
                 <Input
@@ -127,7 +136,10 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="phone"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Số điện thoại
                 </Label>
                 <Input
@@ -137,11 +149,20 @@ export default function Signup() {
                   {...register("phone")}
                   className="w-full"
                   disabled={isSubmitting}
+                  
                 />
+                {errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dob" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="dob"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Ngày sinh
                 </Label>
                 <Input
@@ -151,10 +172,18 @@ export default function Signup() {
                   className="w-full"
                   disabled={isSubmitting}
                 />
+                {errors.dob && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.dob.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="password"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Mật khẩu *
                 </Label>
                 <Input
@@ -173,7 +202,10 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Xác nhận mật khẩu *
                 </Label>
                 <Input
@@ -193,9 +225,9 @@ export default function Signup() {
             </div>
 
             <CardFooter className="flex-col gap-4 mt-8 p-0">
-              <Button 
-                type="submit" 
-                form="signupForm" 
+              <Button
+                type="submit"
+                form="signupForm"
                 className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white"
                 disabled={isSubmitting || signupSuccess}
               >
@@ -212,8 +244,8 @@ export default function Signup() {
               <div className="text-center mt-4">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Đã có tài khoản?{" "}
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300 font-medium hover:underline"
                   >
                     Đăng nhập ngay

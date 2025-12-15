@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "../../ui/card";
 import { apiGet } from "../../../api/movieAPI";
+import { useAuth } from "../Logging/AuthContext";
+
 
 export default function MovieDetail({ id, onSelectPerson }) {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user, addFavorite, removeFavorite, getFavorites } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -36,6 +41,47 @@ export default function MovieDetail({ id, onSelectPerson }) {
       mounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    const checkIfFavorite = async () => {
+      if (!user || !movie) return;
+
+      try {
+        const favorites = await getFavorites();
+        const isFav = Array.isArray(favorites)
+          ? favorites.some((fav) => fav.id === movie.id)
+          : false;
+        setIsFavorite(isFav);
+      } catch (error) {
+        console.error("Error checking favorite:", error);
+      }
+    };
+
+    checkIfFavorite();
+  }, [user, movie]);
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    setFavoriteLoading(true);
+    try {
+      if (isFavorite) {
+        await removeFavorite(movie.id);
+        setIsFavorite(false);
+      } else {
+        await addFavorite(movie.id);
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      alert("Không thể thực hiện thao tác. Vui lòng thử lại!");
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   const fetchReviews = async (page = 1) => {
     if (!id) return;
@@ -329,7 +375,21 @@ export default function MovieDetail({ id, onSelectPerson }) {
 
             <div className="md:w-2/3 p-6 md:p-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {movie.title}
+                {movie.title}{" "}
+                <button
+                  onClick={toggleFavorite}
+                  disabled={favoriteLoading || !user}
+                  className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all mx-auto ${
+                    isFavorite
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <span>{isFavorite ? "Đã thích" : "Thêm vào yêu thích"}</span>
+                  {favoriteLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent ml-2"></div>
+                  )}
+                </button>
               </h1>
 
               {movie.genres && movie.genres.length > 0 && (
@@ -457,8 +517,7 @@ export default function MovieDetail({ id, onSelectPerson }) {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                        </div>
+                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"></div>
                         <div>
                           <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
                             {review.username}

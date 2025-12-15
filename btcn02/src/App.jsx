@@ -29,27 +29,55 @@ export default function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Main />
-                  </ProtectedRoute>
-                } />
-                <Route path="/movie/:id" element={
-                  <ProtectedRoute>
-                    <MovieRoute />
-                  </ProtectedRoute>
-                } />
-                <Route path="/person/:id" element={
-                  <ProtectedRoute>
-                    <PersonRoute />
-                  </ProtectedRoute>
-                } />
-                <Route path="/search" element={
-                  <ProtectedRoute>
-                    <SearchPage />
-                  </ProtectedRoute>
-                } />
+
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Main />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/movie/:id"
+                  element={
+                    <ProtectedRoute>
+                      <MovieRoute />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/person/:id"
+                  element={
+                    <ProtectedRoute>
+                      <PersonRoute />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/search"
+                  element={
+                    <ProtectedRoute>
+                      <SearchPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/favorites"
+                  element={
+                    <ProtectedRoute>
+                      <Favorites />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </main>
             <Footer />
