@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -8,96 +7,67 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const savedUser = localStorage.getItem('user');
-    
-    if (token && savedUser) {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
+      } catch {
+        localStorage.removeItem("user");
       }
     }
-    
     setLoading(false);
   }, []);
 
   const login = async (username, password) => {
     try {
-      const response = await fetch('https://34.124.214.214:2423/api/users/login', {
-        method: 'POST',
+      const res = await fetch("https://34.124.214.214:2423/api/users/login", {
+        method: "POST",
         headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
+          "accept": "application/json",
+          "Content-Type": "application/json",
+          "x-app-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjIzXzMxIiwicm9sZSI6InVzZXIiLCJhcGlfYWNjZXNzIjp0cnVlLCJpYXQiOjE3NjUzNjE3NjgsImV4cCI6MTc3MDU0NTc2OH0.O4I48nov3NLaKDSBhrPe9rKZtNs9q2Tkv4yK0uMthoo",
         },
         body: JSON.stringify({ username, password }),
       });
 
-      if (!response.ok) {
-        throw new Error('Đăng nhập thất bại');
-      }
+      if (!res.ok) throw new Error("Đăng nhập thất bại");
 
-      const data = await response.json();
+      const data = await res.json();
+      const userData = { username, token: data.token || `token-${Date.now()}`, ...data };
       
-      // Lưu token và user info
-      localStorage.setItem('authToken', data.token || 'dummy-token');
-      localStorage.setItem('user', JSON.stringify(data.user || { username }));
-      
-      setUser(data.user || { username });
-      return data.user || { username };
-      
-    } catch (error) {
-      console.error('Login error:', error);
-      return null;
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch {
+      return { success: false, error: "Sai tên đăng nhập hoặc mật khẩu" };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     setUser(null);
-    navigate('/login');
+    return { success: true };
   };
 
   const signup = async (userData) => {
     try {
-      const response = await fetch('https://34.124.214.214:2423/api/users/register', {
-        method: 'POST',
-        headers: {
-          'accept': '*/*',
-          'Content-Type': 'application/json',
-        },
+      const res = await fetch("https://34.124.214.214:2423/api/users/register", {
+        method: "POST",
+        headers: { "accept": "*/*", "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Đăng ký thất bại');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
+      if (!res.ok) throw new Error("Đăng ký thất bại");
+      return { success: true, message: "Đăng ký thành công! Vui lòng đăng nhập." };
+    } catch {
+      return { success: false, error: "Username hoặc email đã tồn tại" };
     }
   };
 
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-    signup,
-    isAuthenticated: !!user,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, login, logout, signup, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

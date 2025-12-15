@@ -29,15 +29,14 @@ export default function Login() {
   const onSubmit = async (values) => {
     try {
       setLoginError("");
-      const user = await login(values.username, values.password);
-
-      if (user) {
+      const result = await login(values.username, values.password);
+      if (result.success) {
         navigate("/");
       } else {
-        setLoginError("Sai tên đăng nhập hoặc mật khẩu!");
+        setLoginError(result.error || "Sai tên đăng nhập hoặc mật khẩu!");
       }
-    } catch (e) {
-      console.error("Lỗi đăng nhập:", e);
+    } catch (error) {
+      console.error("Login error:", error);
       setLoginError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!");
     }
   };
@@ -45,11 +44,9 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md shadow-xl rounded-2xl overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+        <CardHeader>
           <CardTitle className="text-2xl text-center">Đăng nhập</CardTitle>
-          <p className="text-center text-blue-100 text-sm mt-2">
-            Đăng nhập để tiếp tục
-          </p>
+          <p className="text-center text-sm mt-2">Đăng nhập để tiếp tục</p>
         </CardHeader>
 
         <CardContent className="p-6 md:p-8">
