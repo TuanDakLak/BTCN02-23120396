@@ -34,7 +34,7 @@ export default function MostRevenue() {
   }, []);
   if (loading) {
     return (
-      <div className="w-full max-w-2xl mx-auto p-4">
+      <div className="w-full max-w-sm mx-auto p-4">
         <Card className="bg-white dark:bg-gray-800">
           <CardContent className="flex items-center justify-center p-12">
             <div className="text-center space-y-3">
@@ -51,7 +51,7 @@ export default function MostRevenue() {
 
   if (error) {
     return (
-      <div className="w-full max-w-2xl mx-auto p-4">
+      <div className="w-full max-w-sm mx-auto p-4">
         <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
           <CardContent className="p-6">
             <div className="text-center space-y-2">
