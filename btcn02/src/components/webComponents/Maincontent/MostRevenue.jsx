@@ -66,8 +66,9 @@ export default function MostRevenue() {
     );
   }
 
+
   return (
-    <div className="w-80 mx-auto mt-1  ">
+    <div className="w-80 mx-auto mt-1 relative">
       <Carousel
         className="relative w-full"
         setApi={(api) => {
@@ -82,12 +83,15 @@ export default function MostRevenue() {
       >
         <CarouselContent>
           {movies.map((movie) => (
-            <CarouselItem key={movie.id} className="basis-full overflow-hidden">
+            <CarouselItem
+              key={movie.id}
+              className="basis-full "
+            >
               <div className="relative w-full">
                 <img
                   src={movie.image}
                   alt={movie.title}
-                  className="w-full h-full object-cover overflow-hidden rounded-sm"
+                  className="w-full h-full object-cover rounded-sm"
                 />
 
                 <div className="absolute bottom-16 left-0 w-full text-center px-2">
