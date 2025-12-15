@@ -1,11 +1,13 @@
 import MostRevenue from "./MostRevenue";
 import TopMovies from "./TopMovies";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { SearchContext } from "../SearchContext";
 import SearchResults from "../SearchResult";
+import MovieDetail from "./MovieDetail";
 
 export default function Main() {
   const { isActive, results, loading, error } = useContext(SearchContext);
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
 
   if (isActive) {
     return (
@@ -18,16 +20,25 @@ export default function Main() {
           )}
         </div>
         {!loading && !error && results.length > 0 && (
-          <SearchResults movies={results} />
+          <SearchResults movies={results} onSelect={(id) => setSelectedMovieId(id)} />
         )}
       </div>
     );
   }
+
+  if (selectedMovieId) {
+    return (
+      <div className="mt-4">
+        <MovieDetail id={selectedMovieId} onBack={() => setSelectedMovieId(null)} />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <MostRevenue />
-      <TopMovies content="Most Popular" types="most-popular" />
-      <TopMovies content="Top Rating" types="top-rated" />
+      <MostRevenue onSelect={(id) => setSelectedMovieId(id)} />
+      <TopMovies content="Most Popular" types="most-popular" onSelect={(id) => setSelectedMovieId(id)} />
+      <TopMovies content="Top Rating" types="top-rated" onSelect={(id) => setSelectedMovieId(id)} />
     </div>
   );
 }

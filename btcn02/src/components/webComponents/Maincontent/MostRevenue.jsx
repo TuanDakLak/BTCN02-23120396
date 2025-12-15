@@ -9,11 +9,12 @@ import { Card, CardContent } from "../../ui/card";
 import { useState, useEffect } from "react";
 import { apiGet } from "@/api/movieAPI";
 
-export default function MostRevenue() {
+export default function MostRevenue({ onSelect }) {
   const [current, setCurrent] = useState(0);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -24,7 +25,7 @@ export default function MostRevenue() {
         });
         setMovies(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.message || "Lỗi khi tải dữ liệu");
       } finally {
         setLoading(false);
       }
@@ -32,6 +33,7 @@ export default function MostRevenue() {
 
     fetchMovies();
   }, []);
+
   if (loading) {
     return (
       <div className="w-full max-w-sm mx-auto p-4">
@@ -66,7 +68,6 @@ export default function MostRevenue() {
     );
   }
 
-
   return (
     <div className="w-80 mx-auto mt-1 relative">
       <Carousel
@@ -87,7 +88,15 @@ export default function MostRevenue() {
               key={movie.id}
               className="basis-full "
             >
-              <div className="relative w-full group">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelect?.(movie.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") onSelect?.(movie.id);
+                }}
+                className="relative w-full group cursor-pointer"
+              >
                 <img
                   src={movie.image}
                   alt={movie.title}

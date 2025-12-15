@@ -2,20 +2,18 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "../../ui/carousel";
 import { Card, CardContent } from "../../ui/card";
 import { useState, useEffect } from "react";
 import { apiGet } from "@/api/movieAPI";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { Button } from "../../ui/button";
 
-export default function TopMovies({ content, types }) {
+export default function TopMovies({ content, types, onSelect }) {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [api, setApi] = useState(null);
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -26,14 +24,14 @@ export default function TopMovies({ content, types }) {
         });
         setMovies(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.message || "Lỗi khi tải dữ liệu");
       } finally {
         setLoading(false);
       }
     };
 
     fetchMovies();
-  }, []);
+  }, [types]);
 
   if (loading) {
     return (
@@ -80,14 +78,21 @@ export default function TopMovies({ content, types }) {
                 key={movie.id}
                 className="basis-1/3 "
               >
-                <div className="relative w-full h-[250px] group py-8">
-                  <div className="relative w-full h-full transition-all duration-300 ease-out cursor-pointer group-hover:scale-150 group-hover:z-50">
-
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelect?.(movie.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") onSelect?.(movie.id);
+                  }}
+                  className="relative w-full h-[250px] group py-8 cursor-pointer"
+                >
+                  <div className="relative w-full h-full transition-all duration-300 ease-out group-hover:scale-150 group-hover:z-50">
                     <div className="rounded-sm my-carousel shadow-lg h-full">
                       <img
                         src={movie.image}
                         alt={movie.title}
-                        className="w-full h-full"
+                        className="w-full h-full object-cover"
                       />
                     </div>
 
@@ -119,7 +124,3 @@ export default function TopMovies({ content, types }) {
     </div>
   );
 }
-
-
-
-
