@@ -7,13 +7,15 @@ import {
 } from "../../ui/carousel";
 import { Card, CardContent } from "../../ui/card";
 import { useState, useEffect } from "react";
-import { apiGet } from "@/api/movieAPI";
+import { apiGet } from "../../../api/movieAPI";
+import { useNavigate } from "react-router-dom";
 
-export default function MostRevenue({ onSelect }) {
+export default function MostRevenue() {
   const [current, setCurrent] = useState(0);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -74,9 +76,7 @@ export default function MostRevenue({ onSelect }) {
         className="relative w-full"
         setApi={(api) => {
           if (!api) return;
-
           setCurrent(api.selectedScrollSnap());
-
           api.on("select", () => {
             setCurrent(api.selectedScrollSnap());
           });
@@ -91,9 +91,9 @@ export default function MostRevenue({ onSelect }) {
               <div
                 role="button"
                 tabIndex={0}
-                onClick={() => onSelect?.(movie.id)}
+                onClick={() => navigate(`/movie/${movie.id}`)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") onSelect?.(movie.id);
+                  if (e.key === "Enter" || e.key === " ") navigate(`/movie/${movie.id}`);
                 }}
                 className="relative w-full group cursor-pointer"
               >
@@ -138,3 +138,6 @@ export default function MostRevenue({ onSelect }) {
     </div>
   );
 }
+
+
+

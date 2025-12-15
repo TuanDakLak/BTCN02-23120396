@@ -4,15 +4,17 @@ import {
   CarouselItem,
 } from "../../ui/carousel";
 import { Card, CardContent } from "../../ui/card";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { apiGet } from "@/api/movieAPI";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function TopMovies({ content, types, onSelect }) {
+export default function TopMovies({ content, types }) {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [api, setApi] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -68,7 +70,7 @@ export default function TopMovies({ content, types, onSelect }) {
   }
 
   return (
-    <div className="mt-3 ">
+    <div className="mt-3">
       <h2 className="text-2xl font-semibold text-left ml-2 mb-5">{content}</h2>
       <div className="w-full ">
         <Carousel className="relative w-full mx-auto" setApi={setApi}>
@@ -76,14 +78,14 @@ export default function TopMovies({ content, types, onSelect }) {
             {movies.map((movie) => (
               <CarouselItem
                 key={movie.id}
-                className="basis-1/3 "
+                className="basis-1/3"
               >
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() => onSelect?.(movie.id)}
+                  onClick={() => navigate(`/movie/${movie.id}`)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") onSelect?.(movie.id);
+                    if (e.key === "Enter" || e.key === " ") navigate(`/movie/${movie.id}`);
                   }}
                   className="relative w-full h-[250px] group py-8 cursor-pointer"
                 >

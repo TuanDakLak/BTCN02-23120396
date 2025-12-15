@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { SearchContext } from "./SearchContext";
-import SearchResults from "./SearchResult";
+import { SearchContext } from "../SearchContext";
+import SearchResults from "../SearchResult";
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
