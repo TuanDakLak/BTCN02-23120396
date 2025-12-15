@@ -6,6 +6,7 @@ export default function MovieDetail({ id, onSelectPerson }) {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState(null);
@@ -38,58 +39,119 @@ export default function MovieDetail({ id, onSelectPerson }) {
 
   const fetchReviews = async (page = 1) => {
     if (!id) return;
+    const pageNum = Number(page) || 1;
+    const pageSize = Number(reviewsPagination.page_size) || 5;
+
+    setReviewsLoading(true);
+    setReviewsError(null);
+    setReviewsPagination((p) => ({ ...p, current_page: pageNum }));
+
+    const qs = `?page=${pageNum}&limit=${pageSize}&sort=newest`;
+    const absoluteBase = "https://34.124.214.214:2423";
+
     try {
-      setReviewsLoading(true);
-      setReviewsError(null);
-      const data = await apiGet(`/api/movies/${id}/reviews?page=${page}&limit=5&sort=newest`);
-      
-      setReviews(data.data || []);
-      setReviewsPagination(data.pagination || {
-        current_page: page,
-        total_pages: 1,
-        total_items: 0,
-        page_size: 5
-      });
-      
+      let res = null;
+      try {
+        res = await apiGet(`/api/movies/${id}/reviews${qs}`);
+      } catch (e) {
+        const url = `${absoluteBase}/api/movies/${id}/reviews${qs}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`Fetch failed: ${r.status}`);
+        res = await r.json();
+      }
+
+      let items = [];
+      let pagination = null;
+
+      if (Array.isArray(res)) {
+        items = res;
+        pagination = {
+          current_page: pageNum,
+          total_pages: 1,
+          total_items: res.length,
+          page_size: pageSize,
+        };
+      } else if (res && Array.isArray(res.data)) {
+        items = res.data;
+        pagination = res.pagination || {};
+      } else if (res && Array.isArray(res.reviews)) {
+        items = res.reviews;
+        pagination = res.pagination || {};
+      } else if (res && Array.isArray(res.items)) {
+        items = res.items;
+        pagination = res.pagination || {};
+      } else {
+        const foundArray =
+          res && Object.values(res).find((v) => Array.isArray(v));
+        if (Array.isArray(foundArray)) {
+          items = foundArray;
+          pagination = res.pagination || {};
+        } else {
+          items = [];
+          pagination = {
+            current_page: pageNum,
+            total_pages: 1,
+            total_items: 0,
+            page_size: pageSize,
+          };
+        }
+      }
+
+      const normalizedPagination = {
+        current_page: Number(pagination?.current_page ?? pageNum) || pageNum,
+        total_pages: Math.max(1, Number(pagination?.total_pages ?? 1)),
+        total_items: Number(pagination?.total_items ?? items.length ?? 0),
+        page_size: Number(pagination?.page_size ?? pageSize),
+      };
+
+      setReviews(items);
+      setReviewsPagination(normalizedPagination);
     } catch (err) {
       console.error("Lỗi khi tải reviews:", err);
-      setReviewsError(err.message || "Lỗi khi tải đánh giá");
+      setReviewsError(err?.message || "Lỗi khi tải đánh giá");
       setReviews([]);
+      setReviewsPagination((prev) => ({
+        ...prev,
+        current_page: Math.max(1, prev.current_page || 1),
+        total_pages: 1,
+        total_items: 0,
+      }));
     } finally {
       setReviewsLoading(false);
     }
   };
   useEffect(() => {
-    if (movie && id) {
-      fetchReviews(1);
-    }
-  }, [movie, id]);
+    if (!id) return;
+    setReviews([]);
+    setReviewsError(null);
+    setReviewsLoading(false);
+    setReviewsPagination((p) => ({ ...p, current_page: 1 }));
+    fetchReviews(1);
+  }, [id]);
 
   const handlePageChange = (page) => {
-    if (page >= 1 && page <= reviewsPagination.total_pages) {
-      fetchReviews(page);
-      // Scroll to reviews section
+    const pageNum = Number(page);
+    if (!pageNum) return;
+    if (pageNum >= 1 && pageNum <= reviewsPagination.total_pages) {
+      fetchReviews(pageNum);
       setTimeout(() => {
-        const reviewsSection = document.getElementById('reviews-section');
+        const reviewsSection = document.getElementById("reviews-section");
         if (reviewsSection) {
-          reviewsSection.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
+          reviewsSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-      }, 50);
+      }, 120);
     }
   };
 
   const renderPagination = () => {
     const { current_page, total_pages } = reviewsPagination;
-    if (total_pages <= 1) return null;
-    
+    if (!total_pages || total_pages <= 1) return null;
+
     const pages = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(1, current_page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(total_pages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -118,9 +180,11 @@ export default function MovieDetail({ id, onSelectPerson }) {
         <button
           key={i}
           onClick={() => handlePageChange(i)}
+          aria-current={i === current_page ? "page" : undefined}
+          disabled={i === current_page}
           className={`px-3 py-1 rounded-lg transition-colors ${
             i === current_page
-              ? "bg-blue-500 text-white font-medium"
+              ? "bg-blue-500 text-white font-medium cursor-default"
               : "hover:bg-gray-100 dark:hover:bg-gray-700"
           }`}
         >
@@ -148,7 +212,37 @@ export default function MovieDetail({ id, onSelectPerson }) {
       );
     }
 
-    return pages;
+    return (
+      <div className="flex items-center justify-center space-x-2">
+        <button
+          onClick={() => handlePageChange(reviewsPagination.current_page - 1)}
+          disabled={reviewsPagination.current_page === 1}
+          className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+            reviewsPagination.current_page === 1
+              ? "text-gray-400 cursor-not-allowed"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700"
+          }`}
+        >
+          ← Trước
+        </button>
+
+        {pages}
+
+        <button
+          onClick={() => handlePageChange(reviewsPagination.current_page + 1)}
+          disabled={
+            reviewsPagination.current_page === reviewsPagination.total_pages
+          }
+          className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+            reviewsPagination.current_page === reviewsPagination.total_pages
+              ? "text-gray-400 cursor-not-allowed"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700"
+          }`}
+        >
+          Sau →
+        </button>
+      </div>
+    );
   };
 
   if (loading) {
@@ -188,6 +282,28 @@ export default function MovieDetail({ id, onSelectPerson }) {
 
   if (!movie) return null;
 
+  const renderPersonButton = (p) => (
+    <button
+      key={p.id}
+      onClick={() => onSelectPerson?.(p.id)}
+      className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors mr-2 mb-2 text-sm"
+    >
+      {p.name}
+    </button>
+  );
+
+  const formatReviewDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -296,147 +412,98 @@ export default function MovieDetail({ id, onSelectPerson }) {
         </CardContent>
       </Card>
 
-      {movie.reviews && movie.reviews.length > 0 && (
-        <Card
-          id="reviews-section"
-          className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden mt-8"
-        >
-          <CardContent className="p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Đánh giá từ khán giả
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {totalReviews} đánh giá
-                  {totalPages > 1 && ` • Trang ${currentPage}/${totalPages}`}
-                </p>
-              </div>
+      <Card
+        id="reviews-section"
+        className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden mt-8"
+      >
+        <CardContent className="p-6 md:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Đánh giá từ khán giả
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                {reviewsPagination.total_items} đánh giá
+                {reviewsPagination.total_pages > 1 &&
+                  ` • Trang ${reviewsPagination.current_page}/${reviewsPagination.total_pages}`}
+              </p>
             </div>
+          </div>
 
-            <div className="space-y-4">
-              {currentReviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-white">
-                          {review.username}
+          {reviewsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent mx-auto mb-3"></div>
+              <p className="text-gray-500 dark:text-gray-400">
+                Đang tải đánh giá...
+              </p>
+            </div>
+          ) : reviewsError ? (
+            <div className="text-center py-8">
+              <p className="text-red-500 dark:text-red-400">{reviewsError}</p>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
+                Chưa có đánh giá nào cho phim này.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
+                            {review.username}
+                          </h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatReviewDate(review.date)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded">
+                        <span className="text-amber-600 dark:text-amber-400 font-bold text-sm">
+                          {review.rate}
                         </span>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm">
-                          {review.username}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatReviewDate(review.date)}
-                        </p>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-1 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded">
-                      <span className="text-amber-600 dark:text-amber-400 font-bold text-sm">
-                        {review.rate}
-                      </span>
-                    </div>
-                  </div>
 
-                  {review.title && (
-                    <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">
-                      {review.title}
-                    </h5>
-                  )}
-
-                  <div className="mt-2">
-                    <p className="text-gray-600 dark:text-gray-400 text-sm text-left leading-relaxed">
-                      {review.content}
-                    </p>
-                    {review.warning_spoilers && (
-                      <span className="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-xs text-red-600 dark:text-red-400 rounded">
-                        ⚠️ Cảnh báo spoiler
-                      </span>
+                    {review.title && (
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">
+                        {review.title}
+                      </h5>
                     )}
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* FIXED: Phân trang luôn hiển thị khi có nhiều hơn 1 trang */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center space-x-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
-                    currentPage === 1
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  ← Trước
-                </button>
-
-                {renderPagination()}
-
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
-                    currentPage === totalPages
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  Sau →
-                </button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Similar Movies */}
-      {movie.similar_movies && movie.similar_movies.length > 0 && (
-        <Card className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden mt-8">
-          <CardContent className="p-6 md:p-8">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Phim tương tự
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {movie.similar_movies.slice(0, 4).map((similarMovie) => (
-                <button
-                  key={similarMovie.id}
-                  onClick={() =>
-                    (window.location.href = `/movies/${similarMovie.id}`)
-                  }
-                  className="group text-left"
-                >
-                  <div className="relative overflow-hidden rounded-lg mb-2">
-                    <img
-                      src={similarMovie.image}
-                      alt={similarMovie.title}
-                      className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                      ⭐ {similarMovie.rate?.toFixed(1) || "0.0"}
+                    <div className="mt-2">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm text-left leading-relaxed">
+                        {review.content}
+                      </p>
+                      {review.warning_spoilers && (
+                        <span className="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-xs text-red-600 dark:text-red-400 rounded">
+                          Cảnh báo spoiler
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <h4 className="font-medium text-gray-800 dark:text-gray-200 text-sm line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                    {similarMovie.title}
-                  </h4>
-                  {similarMovie.year && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {similarMovie.year}
-                    </p>
-                  )}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                ))}
+              </div>
+
+              {reviewsPagination.total_pages > 1 && (
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  {renderPagination()}
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
