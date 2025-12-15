@@ -11,7 +11,7 @@ import { apiGet } from "@/api/movieAPI";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "../../ui/button";
 
-export default function TopMovies({ content, types}) {
+export default function TopMovies({ content, types }) {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -80,26 +80,12 @@ export default function TopMovies({ content, types}) {
                 key={movie.id}
                 className="basis-1/3 overflow-hidden"
               >
-                <div className="relative w-full h-[250px] overflow-hidden rounded-sm">
+                <div className="relative w-full h-[250px] overflow-hidden rounded-sm ">
                   <img
                     src={movie.image}
                     alt={movie.title}
                     className="w-full h-full"
                   />
-
-                  <div className="absolute bottom-16 left-0 w-full text-center px-2">
-                    <h3 className="text-yellow-300 font-bold text-lg drop-shadow">
-                      {movie.title} ({movie.year})
-                    </h3>
-                  </div>
-
-                  {movie.genres && (
-                    <div className="absolute bottom-10 left-0 w-full text-center">
-                      <span className="text-yellow-300 text-sm drop-shadow">
-                        [ {movie.genres.join(", ")} ]
-                      </span>
-                    </div>
-                  )}
                 </div>
               </CarouselItem>
             ))}
