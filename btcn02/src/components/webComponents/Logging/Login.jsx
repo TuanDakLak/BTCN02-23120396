@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./card.jsx";
+} from "../../ui/card.jsx";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Button } from "../../ui/button";
@@ -30,13 +30,14 @@ export default function Login() {
     try {
       setLoginError("");
       const user = await login(values.username, values.password);
-      
+
       if (user) {
         navigate("/");
       } else {
         setLoginError("Sai tên đăng nhập hoặc mật khẩu!");
       }
     } catch (e) {
+      console.error("Lỗi đăng nhập:", e);
       setLoginError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!");
     }
   };
@@ -63,7 +64,10 @@ export default function Login() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="username"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Tên đăng nhập
                 </Label>
                 <Input
@@ -81,7 +85,10 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="password"
+                  className="text-gray-700 dark:text-gray-300"
+                >
                   Mật khẩu
                 </Label>
                 <Input
@@ -101,8 +108,8 @@ export default function Login() {
             </div>
 
             <CardFooter className="flex-col gap-4 mt-8 p-0">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
                 disabled={isSubmitting}
               >
@@ -119,8 +126,8 @@ export default function Login() {
               <div className="text-center mt-4">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Chưa có tài khoản?{" "}
-                  <Link 
-                    to="/signup" 
+                  <Link
+                    to="/signup"
                     className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline"
                   >
                     Đăng ký ngay
