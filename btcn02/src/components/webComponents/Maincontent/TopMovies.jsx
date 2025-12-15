@@ -92,7 +92,7 @@ export default function TopMovies({ content, types, onSelect }) {
                       <img
                         src={movie.image}
                         alt={movie.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full"
                       />
                     </div>
 

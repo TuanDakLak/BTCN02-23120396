@@ -4,10 +4,12 @@ import { useContext, useState } from "react";
 import { SearchContext } from "../SearchContext";
 import SearchResults from "../SearchResult";
 import MovieDetail from "./MovieDetail";
+import PersonDetail from "./PersonDetail";
 
 export default function Main() {
   const { isActive, results, loading, error } = useContext(SearchContext);
   const [selectedMovieId, setSelectedMovieId] = useState(null);
+  const [selectedPersonId, setSelectedPersonId] = useState(null);
 
   if (isActive) {
     return (
@@ -26,10 +28,30 @@ export default function Main() {
     );
   }
 
+  if (selectedPersonId) {
+    return (
+      <div className="mt-4">
+        <PersonDetail
+          id={selectedPersonId}
+          onBack={() => setSelectedPersonId(null)}
+          onSelectMovie={(id) => {
+            setSelectedMovieId(id);
+            setSelectedPersonId(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+
   if (selectedMovieId) {
     return (
       <div className="mt-4">
-        <MovieDetail id={selectedMovieId} onBack={() => setSelectedMovieId(null)} />
+        <MovieDetail
+          id={selectedMovieId}
+          onBack={() => setSelectedMovieId(null)}
+          onSelectPerson={(id) => setSelectedPersonId(id)}
+        />
       </div>
     );
   }

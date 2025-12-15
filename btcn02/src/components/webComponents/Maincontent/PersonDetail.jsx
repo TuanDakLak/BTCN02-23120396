@@ -67,7 +67,7 @@ export default function PersonDetail({ id, onBack, onSelectMovie }) {
               className="mt-4 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded"
               onClick={onBack}
             >
-              Quay lại
+              ← Quay lại
             </button>
           </CardContent>
         </Card>
