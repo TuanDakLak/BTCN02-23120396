@@ -72,20 +72,31 @@ export default function TopMovies({ content, types }) {
   return (
     <div className="mt-3 ">
       <h2 className="text-2xl font-semibold text-left ml-2 mb-5">{content}</h2>
-      <div className="w-full">
-        <Carousel className="relative w-6xl mx-auto" setApi={setApi}>
+      <div className="w-full ">
+        <Carousel className="relative w-full mx-auto" setApi={setApi}>
           <CarouselContent>
             {movies.map((movie) => (
               <CarouselItem
                 key={movie.id}
-                className="basis-1/3 overflow-hidden"
+                className="basis-1/3 "
               >
-                <div className="relative w-full h-[250px] overflow-hidden rounded-sm ">
-                  <img
-                    src={movie.image}
-                    alt={movie.title}
-                    className="w-full h-full"
-                  />
+                <div className="relative w-full h-[250px] group py-8">
+                  <div className="relative w-full h-full transition-all duration-300 ease-out cursor-pointer group-hover:scale-150 group-hover:z-50">
+
+                    <div className="rounded-sm my-carousel shadow-lg h-full">
+                      <img
+                        src={movie.image}
+                        alt={movie.title}
+                        className="w-full h-full"
+                      />
+                    </div>
+
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-black/95 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-3 py-2.5 rounded-sm shadow-xl">
+                      <h3 className="text-white font-bold text-sm text-center leading-tight">
+                        {movie.title} ({movie.year})
+                      </h3>
+                    </div>
+                  </div>
                 </div>
               </CarouselItem>
             ))}
@@ -108,3 +119,7 @@ export default function TopMovies({ content, types }) {
     </div>
   );
 }
+
+
+
+

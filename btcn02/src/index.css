@@ -127,7 +127,10 @@
   --navbg: oklch(21% 0.034 264.665);
 }
 
-
+.my-carousel:hover
+{
+  overflow: visible !important;
+}
 
 @layer base {
   * {
