@@ -6,7 +6,8 @@ import { SearchProvider } from "./components/webComponents/SearchContext";
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SearchPage from "./components/webComponents/Maincontent/SearchPage";
-
+import MovieRoute from "./components/webComponents/MovieRoute";
+import PersonRoute from "./components/webComponents/PersonRoute";
 import "./App.css";
 
 export default function App() {
