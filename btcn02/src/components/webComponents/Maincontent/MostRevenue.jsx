@@ -7,7 +7,6 @@ import {
 } from "../../ui/carousel";
 import { Card, CardContent } from "../../ui/card";
 import { useState, useEffect } from "react";
-import { Star, TrendingUp } from "lucide-react";
 import { apiGet } from "@/api/movieAPI";
 
 export default function MostRevenue() {
